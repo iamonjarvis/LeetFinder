@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>LeetCode Problem Finder</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: "Segoe UI", Tahoma, sans-serif;
+      background: #f5f7fa;
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .container {
+      background: #fff;
+      padding: 40px 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      text-align: center;
+      max-width: 400px;
+      width: 90%;
+    }
+    h2 {
+      margin-bottom: 20px;
+      color: #333;
+      font-weight: 600;
+      font-size: 1.5em;
+    }
+    .input-group {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    input {
+      padding: 12px;
+      flex: 1 1 60%;
+      font-size: 1em;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      outline: none;
+      transition: border 0.2s;
+      min-width: 140px;
+    }
+    input:focus { border-color: #007acc; }
+    button {
+      padding: 12px 20px;
+      font-size: 1em;
+      background: #007acc;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.2s;
+      flex: 1 1 30%;
+      min-width: 100px;
+    }
+    button:hover { background: #005ea3; }
+    #result { margin-top: 25px; font-size: 1.1em; }
+    a {
+      text-decoration: none;
+      color: #007acc;
+      font-weight: 600;
+      transition: color 0.2s;
+    }
+    a:hover { color: #005ea3; }
+    .error { color: #d9534f; font-weight: 500; }
+    .difficulty { font-weight: bold; margin-top: 6px; }
+    .difficulty.easy { color: green; }
+    .difficulty.medium { color: #e6b800; }
+    .difficulty.hard { color: red; }
+    .tags {
+      margin-top: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 6px;
+    }
+    .tag {
+      background: #f0f0f0;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.85em;
+      color: #555;
+    }
+    @media (max-width: 480px) {
+      .container { padding: 25px 20px; }
+      h2 { font-size: 1.3em; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>LeetCode Problem Finder</h2>
+    <div class="input-group">
+      <input type="number" id="problemNumber" placeholder="Enter problem ID">
+      <button onclick="findProblem()">Search</button>
+    </div>
+    <div id="result"></div>
+  </div>
+
+  <script>
+    function findProblem() {
+      const id = document.getElementById("problemNumber").value.trim();
+      const resultDiv = document.getElementById("result");
+
+      if (!id) {
+        resultDiv.innerHTML = `<div class="error">Please enter a problem number.</div>`;
+        return;
+      }
+
+      fetch(`/api/${id}`)
+        .then(res => {
+          if (!res.ok) throw new Error("Problem not found");
+          return res.json();
+        })
+        .then(data => {
+          const url = `https://leetcode.com/problems/${data.slug}/`;
+          
+          let diffClass = data.difficulty.toLowerCase();
+          let tagsHtml = data.tags && data.tags.length
+            ? `<div class="tags">${data.tags.map(t => `<span class="tag">${t}</span>`).join("")}</div>`
+            : "";
+
+          resultDiv.innerHTML = `
+            <div>
+              Problem #${id}: <a href="${url}" target="_blank">${data.title}</a>
+              <div class="difficulty ${diffClass}">${data.difficulty}</div>
+              ${tagsHtml}
+            </div>
+          `;
+        })
+        .catch(() => {
+          resultDiv.innerHTML = `<div class="error">Problem not found!</div>`;
+        });
+    }
+
+    // Press Enter to search
+    document.getElementById("problemNumber")
+      .addEventListener("keydown", function(e) {
+        if (e.key === "Enter") findProblem();
+      });
+  </script>
+</body>
+</html>
